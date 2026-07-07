@@ -1,1 +1,1369 @@
-test
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhotoForge 手机版</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222e;
+    --border: #2a2a3a;
+    --text: #eeeef0;
+    --text2: #88889a;
+    --accent: #6c5ce7;
+    --accent2: #a29bfe;
+    --green: #00b894;
+    --orange: #fdcb6e;
+    --red: #e17055;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  .app { max-width: 1400px; margin:0 auto; padding: 24px 28px; }
+
+  /* ---- Header ---- */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 38px; height: 38px; background: linear-gradient(135deg,var(--accent),var(--accent2));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: 0 4px 16px rgba(108,92,231,0.3);
+  }
+  .logo h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo span { color: var(--text2); font-weight: 400; }
+  .header-actions { display: flex; gap: 8px; }
+
+  /* ---- Buttons ---- */
+  .btn {
+    padding: 8px 18px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: .2s; white-space: nowrap;
+    touch-action: manipulation;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg,var(--accent),var(--accent2)); color: #fff;
+    box-shadow: 0 4px 14px rgba(108,92,231,0.25);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,92,231,0.35); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #2f2f42; }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-success:hover { transform: translateY(-1px); }
+  .btn-warning { background: var(--orange); color: #1d1d1f; }
+  .btn-warning:hover { filter: brightness(1.1); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-icon {
+    width: 34px; height: 34px; padding:0; display:flex; align-items:center; justify-content:center;
+    border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text2); transition: .2s;
+  }
+  .btn-icon:hover { background: #2f2f42; color: var(--text); }
+  .btn-icon.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ---- Layout: 手机版默认单列 ---- */
+  .workspace { display: flex; flex-direction: column; gap: 14px; }
+  .right-col { width: 100%; }
+
+  /* ---- 手机版基础样式（去掉媒体查询包装，始终生效） ---- */
+  .app { padding: 10px 12px; }
+  header { padding: 4px 0 10px; }
+  .logo h1 { font-size: 17px; }
+  .logo-icon { width: 30px; height: 30px; font-size: 16px; }
+  .header-actions { width: 100%; justify-content: center; }
+  .header-actions .btn { font-size: 11px; padding: 6px 10px; }
+
+  .placeholder .sub { font-size: 11px; margin-top: 4px; opacity: 0.6; display: block; }
+  .header-actions .btn-primary { flex: 1; text-align: center; }
+
+  .card { padding: 12px; border-radius: 10px; }
+  .card-title { font-size: 10px; margin-bottom: 8px; }
+
+  .tabs { overflow-x: auto; gap: 2px; padding: 2px; -webkit-overflow-scrolling: touch; }
+  .tab { font-size: 11px; padding: 8px 6px; white-space: nowrap; min-width: 0; }
+
+  .preview-area .canvas-wrap { min-height: 0; }
+  .preview-area .canvas-wrap canvas { max-height: 200px; }
+
+  .placeholder { padding: 8px 12px; }
+  .placeholder .big-icon { font-size: 20px; margin-bottom: 2px; }
+  .placeholder p { font-size: 10px; }
+  .placeholder .sub { font-size: 10px; margin-top: 2px; display: block; }
+
+  .img-tag { font-size: 10px; padding: 2px 6px; }
+  .preview-bar { flex-wrap: wrap; gap: 4px; }
+
+  .ctrl-label { font-size: 11px; }
+  .ctrl-row input[type="number"], .ctrl-row select { font-size: 14px; padding: 10px 8px; }
+  .ctrl-row .lock-btn { width: 40px; height: 40px; font-size: 16px; }
+
+  .preset-grid { grid-template-columns: repeat(3, 1fr); gap: 3px; }
+  .preset-btn { font-size: 11px; padding: 10px 4px; }
+
+  .ratio-grid { grid-template-columns: repeat(4, 1fr); gap: 3px; }
+  .ratio-btn { font-size: 11px; padding: 10px 2px; }
+
+  .format-grid { grid-template-columns: repeat(4, 1fr); gap: 3px; }
+  .fmt-btn { font-size: 12px; padding: 12px 2px; }
+
+  .compress-card { padding: 10px; }
+  .compress-row { flex-wrap: wrap; }
+  .compress-row label { min-width: 60px; font-size: 11px; }
+  .compress-row input[type="number"] { font-size: 18px; min-width: 80px; flex: 1; }
+  .compress-preview { gap: 6px; }
+  .compress-stat .num { font-size: 16px; }
+
+  .range-row { gap: 6px; }
+  .range-row label { font-size: 11px; min-width: 24px; }
+  input[type="range"] { height: 6px; }
+  input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; }
+
+  .output-card { padding: 10px; gap: 4px; }
+  .output-card .stat-val { font-size: 13px; }
+  .output-card .stat-label { font-size: 9px; }
+
+  .dpi-visual { flex-direction: column; gap: 6px; }
+  .dpi-visual .screen, .dpi-visual .print { padding: 8px; }
+  .dpi-visual .val { font-size: 16px; }
+
+  .btn { padding: 8px 14px; font-size: 13px; touch-action: manipulation; }
+  .btn-sm { padding: 8px 12px; font-size: 12px; touch-action: manipulation; }
+
+  .tooltip { min-width: 160px; font-size: 10px; white-space: normal; left: 0; transform: none; }
+  .tooltip::after { left: 8px; transform: none; }
+
+  .sep-text { font-size: 10px; }
+  .dpi-hint { font-size: 10px; }
+
+  /* 极小屏 */
+  @media (max-width: 420px) {
+    .preset-grid { grid-template-columns: repeat(2, 1fr); }
+    .ratio-grid { grid-template-columns: repeat(3, 1fr); }
+    .format-grid { grid-template-columns: repeat(2, 1fr); }
+    .compress-row { flex-direction: column; align-items: stretch; }
+    .compress-row label { min-width: unset; }
+    .header-actions .btn { font-size: 10px; padding: 5px 8px; }
+  }
+
+  /* ---- Card ---- */
+  .card {
+    background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);
+    padding: 20px; box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text2); margin-bottom: 14px;
+  }
+  .card-title i { margin-right: 6px; font-style: normal; }
+
+  /* ---- Preview ---- */
+  .preview-area .canvas-wrap {
+    width: 100%; min-height: 460px; border-radius: 10px; overflow: hidden;
+    background: repeating-conic-gradient(#1a1a24 0% 25%, transparent 0% 50%) 0 0 / 24px 24px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .preview-area .canvas-wrap canvas { max-width:100%; max-height:560px; display:block; }
+  .placeholder {
+    color: var(--text2); text-align:center; padding:80px 20px;
+  }
+  .placeholder .big-icon { font-size:52px; margin-bottom:12px; }
+  .placeholder p { font-size:13px; }
+  .placeholder .sub { font-size:11px; margin-top:6px; opacity:0.6; }
+
+  .preview-bar {
+    display: flex; align-items: center; justify-content: space-between; margin-top: 10px;
+  }
+  .img-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .img-tag {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 3px 10px; font-size: 11px; color: var(--text2);
+  }
+  .img-tag strong { color: var(--text); font-weight: 500; }
+
+  /* ---- Right Panel Tabs ---- */
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; background: var(--surface2); border-radius: 8px; padding: 3px; }
+  .tab {
+    flex:1; padding:7px 0; text-align:center; font-size:12px; font-weight:500; border-radius:6px;
+    cursor:pointer; transition:.2s; color: var(--text2); border: none; background: none;
+  }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ---- Form Controls ---- */
+  .ctrl-group { margin-bottom: 14px; }
+  .ctrl-label {
+    display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .ctrl-label .info-dot {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%; background: var(--surface2);
+    font-size: 9px; cursor: help; color: var(--text2); border: 1px solid var(--border);
+    position: relative;
+  }
+  .ctrl-label .info-dot:hover .tooltip { opacity: 1; visibility: visible; }
+  .tooltip {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: #2f2f42; color: var(--text); padding: 10px 14px; border-radius: 8px;
+    font-size: 11px; font-weight: 400; line-height: 1.6; white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 10;
+    opacity: 0; visibility: hidden; transition: .2s; min-width: 240px;
+    border: 1px solid var(--border); text-align: left;
+  }
+  .tooltip::after {
+    content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    border: 5px solid transparent; border-top-color: #2f2f42;
+  }
+
+  .ctrl-row { display: flex; gap: 8px; align-items: center; }
+  .ctrl-row input[type="number"], .ctrl-row select {
+    flex:1; padding:8px 10px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 13px; outline: none;
+    transition: .15s;
+  }
+  .ctrl-row input[type="number"]:focus, .ctrl-row select:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 2px rgba(108,92,231,0.15);
+  }
+  .ctrl-row .unit { font-size: 11px; color: var(--text2); min-width: 20px; }
+  .ctrl-row .lock-btn {
+    width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface2); color: var(--text2); cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; transition: .2s;
+  }
+  .ctrl-row .lock-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
+    background: var(--surface2); border-radius: 2px; outline: none;
+    margin: 6px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--accent); cursor: pointer;
+    border: 2px solid var(--surface); box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .range-row { display: flex; align-items: center; gap: 10px; }
+  .range-row label { font-size: 12px; color: var(--text2); min-width: 36px; }
+  .range-row input[type="range"] { flex: 1; }
+  .range-row .rval { font-size: 11px; color: var(--text2); min-width: 32px; text-align: right; }
+
+  .preset-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  }
+  .preset-btn {
+    padding: 6px 4px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 11px; color: var(--text2); cursor: pointer;
+    text-align: center; transition: .15s;
+  }
+  .preset-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* ---- Compress Section ---- */
+  .compress-card {
+    background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,184,148,0.08));
+    border: 1px solid rgba(108,92,231,0.2);
+    border-radius: 10px; padding: 14px; margin-top: 6px;
+  }
+  .compress-row { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .compress-row label { font-size: 12px; color: var(--text2); min-width: 80px; }
+  .compress-row input[type="number"] {
+    flex: 1; padding: 8px 10px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 14px; outline: none;
+  }
+  .compress-row input[type="number"]:focus { border-color: var(--green); }
+  .compress-row .unit { font-size: 11px; color: var(--text2); min-width: 30px; }
+
+  .compress-preview {
+    display: flex; gap: 12px; margin: 10px 0;
+  }
+  .compress-stat {
+    flex:1; text-align: center; padding: 8px; background: var(--surface2);
+    border-radius: 8px;
+  }
+  .compress-stat .num { font-size: 18px; font-weight: 700; }
+  .compress-stat .num.green { color: var(--green); }
+  .compress-stat .num.accent { color: var(--accent2); }
+  .compress-stat .lbl { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* ---- DPI Demo ---- */
+  .dpi-demo {
+    background: var(--surface2); border-radius: 8px; padding: 12px;
+    margin: 8px 0; border: 1px solid var(--border);
+  }
+  .dpi-demo h4 { font-size: 11px; color: var(--text2); margin-bottom: 8px; }
+  .dpi-visual {
+    display: flex; gap: 0; margin: 8px 0;
+  }
+  .dpi-visual .screen, .dpi-visual .print {
+    flex: 1; text-align: center; padding: 12px 8px; border-radius: 8px;
+  }
+  .dpi-visual .screen { background: rgba(108,92,231,0.1); }
+  .dpi-visual .print { background: rgba(0,184,148,0.1); }
+  .dpi-visual .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .dpi-visual .val { font-size: 20px; font-weight: 700; margin: 4px 0; }
+  .dpi-visual .desc { font-size: 10px; color: var(--text2); }
+
+  /* ---- Ratio ---- */
+  .ratio-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .ratio-btn {
+    padding: 7px 4px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 11px; color: var(--text2); cursor: pointer;
+    text-align: center; transition: .15s;
+  }
+  .ratio-btn:hover { border-color: var(--green); color: var(--text); }
+  .ratio-btn.active { border-color: var(--green); background: rgba(0,184,148,0.1); color: var(--green); }
+
+  .format-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .fmt-btn {
+    padding: 8px 4px; background: var(--surface2); border: 2px solid transparent;
+    border-radius: 8px; font-size: 12px; color: var(--text2); cursor: pointer;
+    text-align: center; transition: .15s; font-weight: 500;
+  }
+  .fmt-btn:hover { background: #2f2f42; }
+  .fmt-btn.active { border-color: var(--accent); background: rgba(108,92,231,0.1); color: var(--text); }
+
+  .output-card {
+    background: var(--surface2); border-radius: 8px; padding: 12px 14px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    border: 1px solid var(--border);
+  }
+  .output-card .stat { }
+  .output-card .stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+  .output-card .stat-val { font-size: 15px; font-weight: 600; margin-top: 2px; color: var(--text); }
+
+  .hidden { display: none; }
+  .sep { height: 1px; background: var(--border); margin: 12px 0; }
+  .sep-text {
+    display: flex; align-items: center; gap: 10px; margin: 12px 0; font-size: 11px; color: var(--text2);
+  }
+  .sep-text::before, .sep-text::after { content:''; flex:1; height:1px; background: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚒️</div>
+      <h1>Photo<span>Forge</span></h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fileInput').click()">📁 打开图片</button>
+      <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="loadImage(event)">
+      <button class="btn btn-secondary btn-sm" onclick="resetAll()">↺ 重置</button>
+      <button class="btn btn-success btn-sm" onclick="exportImage()">💾 导出</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- 左侧预览 -->
+    <div class="preview-area card">
+      <div class="card-title"><i>👁️</i> 预览 · 滚轮缩放</div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <div class="placeholder" id="placeholder">
+          <div class="big-icon">🖼️</div>
+          <p>拖拽图片或点击「打开图片」</p>
+          <div class="sub">支持 JPG / PNG / WebP / BMP</div>
+        </div>
+        <canvas id="mainCanvas" class="hidden"></canvas>
+      </div>
+      <div class="preview-bar">
+        <div class="img-tags" id="imgTags"></div>
+        <div style="font-size:11px;color:var(--text2)" id="viewZoom">100%</div>
+      </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div>
+      <div class="card" style="padding:16px">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="compress" onclick="switchTab('compress')">📦 压缩</button>
+          <button class="tab" data-tab="size" onclick="switchTab('size')">📐 尺寸</button>
+          <button class="tab" data-tab="sharpen" onclick="switchTab('sharpen')">✨ 清晰度</button>
+          <button class="tab" data-tab="bgswap" onclick="switchTab('bgswap')">🎨 换底</button>
+          <button class="tab" data-tab="dpi" onclick="switchTab('dpi')">🖨️ DPI</button>
+          <button class="tab" data-tab="format" onclick="switchTab('format')">💾 格式</button>
+        </div>
+
+        <!-- ===== TAB 1: 压缩（最常用，默认） ===== -->
+        <div class="tab-content active" id="tab-compress">
+
+          <!-- 第一步：选比例 -->
+          <div class="ctrl-label">
+            ① 先选比例
+            <span class="info-dot">?<span class="tooltip">
+              <b>比例</b> 是宽高比，决定图片的形状<br>
+              1:1 = 正方形<br>
+              16:9 = 横屏宽银幕<br>
+              9:16 = 竖屏手机<br>
+              改变比例会从中心裁剪画面<br>
+              原比例 = 不裁剪
+            </span></span>
+          </div>
+          <div class="ratio-grid" style="margin-bottom:10px" id="compressRatioGrid">
+            <div class="ratio-btn active" data-cr="free" onclick="setCompressRatio('free')">🔄 原比例</div>
+            <div class="ratio-btn" data-cr="1:1" onclick="setCompressRatio('1:1')">⬜ 1:1 方形</div>
+            <div class="ratio-btn" data-cr="4:3" onclick="setCompressRatio('4:3')">4:3</div>
+            <div class="ratio-btn" data-cr="3:2" onclick="setCompressRatio('3:2')">3:2</div>
+            <div class="ratio-btn" data-cr="16:9" onclick="setCompressRatio('16:9')">16:9</div>
+            <div class="ratio-btn" data-cr="9:16" onclick="setCompressRatio('9:16')">9:16</div>
+            <div class="ratio-btn" data-cr="2.35:1" onclick="setCompressRatio('2.35:1')">2.35:1</div>
+            <div class="ratio-btn" data-cr="idcard" onclick="setCompressRatio('idcard')">🪪 证件照</div>
+          </div>
+
+          <!-- 第二步：压缩 -->
+          <div class="compress-card">
+            <div class="ctrl-label" style="margin-bottom:4px">
+              ② 压缩到目标文件大小
+              <span class="info-dot">?<span class="tooltip">
+                自动调整尺寸和质量，精确压缩到目标大小<br>
+                系统会先裁成你选的比例 → 再缩尺寸+降质量<br>
+                适合：上传限制 / 邮件附件 / 微信发送
+              </span></span>
+            </div>
+            <div class="compress-row">
+              <label>压缩到</label>
+              <input type="number" id="compressTarget" min="1" max="10240" value="50">
+              <span class="unit">KB</span>
+              <button class="btn btn-success btn-sm" onclick="compressToTarget()">⚡ 开始压缩</button>
+            </div>
+
+            <div id="compressResult" class="hidden">
+              <div class="compress-preview">
+                <div class="compress-stat">
+                  <div class="num accent" id="crOrig">—</div>
+                  <div class="lbl">原始大小</div>
+                </div>
+                <div class="compress-stat">
+                  <div class="num green" id="crNew">—</div>
+                  <div class="lbl">压缩后</div>
+                </div>
+                <div class="compress-stat">
+                  <div class="num" id="crRatio" style="color:var(--orange)">—</div>
+                  <div class="lbl">压缩比</div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);text-align:center">
+                自动调整: <span id="crDetail">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:var(--text2);line-height:1.6;margin:10px 0 6px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+            <b>🤔 改变大小 ≠ 改变比例</b><br>
+            <b>• 改变大小</b> = 调整宽×高的像素数<br>
+            &nbsp;&nbsp;例：1920×1080 → <b>800×450</b>（比例不变，整体缩小）<br>
+            &nbsp;&nbsp;如果改成 800×600，比例就从 16:9 变成 4:3 了，会变形<br>
+            <b>• 改变比例</b> = 改变宽高比<br>
+            &nbsp;&nbsp;例：16:9 → 1:1，从中心裁剪，边缘内容丢失<br><br>
+            <span style="color:var(--accent2)">💡 先裁比例（决定形状）→ 再调大小（决定文件体积）</span>
+          </div>
+
+          <div class="sep-text">或者全手动调</div>
+
+          <div class="ctrl-group">
+            <div class="ctrl-label">手动尺寸</div>
+            <div class="ctrl-row">
+              <input type="number" id="outWidth" min="1" max="50000" oninput="onSizeInput('w')">
+              <span class="unit">×</span>
+              <input type="number" id="outHeight" min="1" max="50000" oninput="onSizeInput('h')">
+              <span class="unit">px</span>
+              <button class="lock-btn active" id="lockBtn" onclick="toggleLock()" title="锁定宽高比">🔗</button>
+            </div>
+            <div class="ctrl-row" style="margin-top:4px">
+              <select id="scaleMode" onchange="processImage()" style="flex:1;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+                <option value="auto">自动适应（保持比例）</option>
+                <option value="exact">精确尺寸（拉伸）</option>
+                <option value="fit">适应（加黑边）</option>
+                <option value="fill">填充裁剪</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ctrl-label">快速预设</div>
+          <div class="preset-grid">
+            <div class="preset-btn" onclick="setSize(1920,1080)">1920×1080</div>
+            <div class="preset-btn" onclick="setSize(3840,2160)">3840×2160</div>
+            <div class="preset-btn" onclick="setSize(1280,720)">1280×720</div>
+            <div class="preset-btn" onclick="setSize(800,600)">800×600</div>
+            <div class="preset-btn" onclick="setSize(640,480)">640×480</div>
+            <div class="preset-btn" onclick="setSize(320,240)">320×240</div>
+            <div class="preset-btn" onclick="setPct(50)">缩到50%</div>
+            <div class="preset-btn" onclick="setPct(200)">放大200%</div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 2: 尺寸 ===== -->
+        <div class="tab-content" id="tab-size">
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              像素尺寸
+              <span class="info-dot">?<span class="tooltip">
+                <b>像素(PX)</b> 是图片的基本单位，一个像素就是一个色块<br>
+                图片尺寸 = 宽×高 (像素数量)<br>
+                像素越多 → 图片越大 → 细节越丰富<br>
+                <b>常见误区</b>：放大图片不会增加细节<br>
+                只是把已有的像素拉大，变模糊
+              </span></span>
+            </div>
+            <div class="ctrl-row">
+              <input type="number" id="outWidth2" min="1" max="50000" oninput="onSizeSync('w')">
+              <span class="unit">×</span>
+              <input type="number" id="outHeight2" min="1" max="50000" oninput="onSizeSync('h')">
+              <span class="unit">px</span>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              缩放模式
+              <span class="info-dot">?<span class="tooltip">
+                <b>自动适应</b>：保持原图比例，不拉伸<br>
+                <b>精确尺寸</b>：强制到目标尺寸，会变形<br>
+                <b>适应加边</b>：保持比例，不足部分黑边填充<br>
+                <b>填充裁剪</b>：保持比例，多余部分裁掉
+              </span></span>
+            </div>
+            <select id="scaleMode2" onchange="syncScaleMode()" style="width:100%;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+              <option value="auto">自动适应（推荐）</option>
+              <option value="exact">精确尺寸（会拉伸）</option>
+              <option value="fit">适应加黑边</option>
+              <option value="fill">填充裁剪</option>
+            </select>
+          </div>
+
+          <div class="ctrl-label">插值算法</div>
+          <select id="interpolation" onchange="processImage()" style="width:100%;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+            <option value="high">高质量（放大时细节好）</option>
+            <option value="low">低质量（速度快）</option>
+            <option value="nearest">最近邻（像素风）</option>
+          </select>
+
+          <div class="sep"></div>
+          <div class="ctrl-label">常用尺寸</div>
+          <div class="preset-grid">
+            <div class="preset-btn" onclick="setSize2(1920,1080)">1920×1080</div>
+            <div class="preset-btn" onclick="setSize2(3840,2160)">3840×2160</div>
+            <div class="preset-btn" onclick="setSize2(800,600)">800×600</div>
+            <div class="preset-btn" onclick="setSize2(480,640)">480×640</div>
+            <div class="preset-btn" onclick="setSize2(295,413)">证件照</div>
+            <div class="preset-btn" onclick="setSize2(200,200)">200×200</div>
+            <div class="preset-btn" onclick="setPct2(50)">缩小50%</div>
+            <div class="preset-btn" onclick="setPct2(150)">放大150%</div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 3: 清晰度 ===== -->
+        <div class="tab-content" id="tab-sharpen">
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              锐化强度
+              <span class="info-dot">?<span class="tooltip">
+                锐化 = 强化边缘，让图片更清晰<br>
+                <b>不改变像素数量</b>，只是视觉效果<br>
+                适合：原图有点糊、缩小后细节丢失<br>
+                过度锐化会有白色光边<br>
+                建议：日常用 30-60
+              </span></span>
+            </div>
+            <div class="range-row">
+              <label>0</label>
+              <input type="range" id="sharpenAmount" min="0" max="200" value="0" oninput="onSharpen()">
+              <label>200</label>
+              <span class="rval" id="sharpenVal">0</span>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <div class="ctrl-label">降噪（去颗粒感）</div>
+            <div class="range-row">
+              <label>0</label>
+              <input type="range" id="denoiseAmount" min="0" max="100" value="0" oninput="onSharpen()">
+              <label>100</label>
+              <span class="rval" id="denoiseVal">0</span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-secondary btn-sm" onclick="setSharpen(30,5)">轻度</button>
+            <button class="btn btn-secondary btn-sm" onclick="setSharpen(60,10)">标准</button>
+            <button class="btn btn-secondary btn-sm" onclick="setSharpen(120,20)">强力</button>
+            <button class="btn btn-secondary btn-sm" onclick="setSharpen(0,0)">关闭</button>
+          </div>
+
+          <div class="sep"></div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.7">
+            <b>一句话区分三者：</b><br>
+            📐 <b>像素</b> = 图片由多少个点组成（决定了多大多清晰的基础）<br>
+            ✨ <b>清晰度(锐化)</b> = 让每个点之间的边缘更锋利（不增加点）<br>
+            🖨️ <b>DPI</b> = 这些点打印时每英寸放多少个（决定打印大小）
+          </div>
+        </div>
+
+        <!-- ===== TAB: 换底 ===== -->
+        <div class="tab-content" id="tab-bgswap">
+          <div class="ctrl-group">
+            <div class="ctrl-label">① 选要替换的颜色</div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="pickColorFromImage()">🎯 从图片取色</button>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(255,255,255)" style="background:#fff;color:#333">⬜ 白色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(0,125,255)" style="background:#007dff;color:#fff">🔵 蓝色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(255,50,50)" style="background:#ff3232;color:#fff">🔴 红色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(0,180,80)" style="background:#00b450;color:#fff">🟢 绿色</button>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+              <span style="font-size:11px;color:var(--text2)">目标:</span>
+              <span id="targetColorPreview" style="display:inline-block;width:18px;height:18px;border-radius:4px;border:1px solid var(--border);background:#fff"></span>
+              <span id="targetColorLabel" style="font-size:11px;color:var(--text2)">RGB(255,255,255)</span>
+            </div>
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-label">② 替换成</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(255,255,255)" style="background:#fff;color:#333">⬜ 白色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(0,125,255)" style="background:#007dff;color:#fff">🔵 蓝色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(255,50,50)" style="background:#ff3232;color:#fff">🔴 红色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(0,180,80)" style="background:#00b450;color:#fff">🟢 绿色</button>
+            </div>
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-label">③ 容差</div>
+            <div class="range-row">
+              <label>低</label>
+              <input type="range" id="bgTolerance" min="5" max="150" value="40" oninput="updateBgTolerance()">
+              <label>高</label>
+              <span class="rval" id="bgToleranceVal">40</span>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="applyBgSwap()">⚡ 执行换底</button>
+          <div class="sep"></div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6">
+            <b>提示：</b>容差小=只换纯色，容差大=过渡更自然<br>
+            证件照换底建议 30-50
+          </div>
+        </div>
+
+        <!-- ===== TAB 4: DPI ===== -->
+        <div class="tab-content" id="tab-dpi">
+          <div class="dpi-demo">
+            <h4>🖼️ DPI = 每英寸点数 (Dots Per Inch)</h4>
+            <div class="dpi-visual">
+              <div class="screen">
+                <div class="label">💻 屏幕显示</div>
+                <div class="val">72 dpi</div>
+                <div class="desc">1920px → 26.7 英寸宽</div>
+              </div>
+              <div class="print">
+                <div class="label">🖨️ 打印标准</div>
+                <div class="val">300 dpi</div>
+                <div class="desc">1920px → 6.4 英寸宽</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.7;padding:0 4px">
+              <b>🌰 举个栗子：</b><br>
+              一张 <b>1920×1080</b> 的图片：<br>
+              · 在屏幕上看（72dpi）→ 可以铺满 26.7 英寸<br>
+              · 拿去打印（300dpi）→ 只能印 6.4 英寸宽<br><br>
+              <b>💡 关键结论：</b><br>
+              <span style="color:var(--accent2)">DPI 只影响打印尺寸，不影响屏幕显示效果</span><br>
+              屏幕看图片不需要关心 DPI，只有打印才需要
+            </div>
+          </div>
+
+          <div class="ctrl-group" style="margin-top:8px">
+            <div class="ctrl-label">设置打印 DPI</div>
+            <div class="ctrl-row">
+              <input type="number" id="dpiInput" min="72" max="2400" value="300" oninput="updateStats()">
+              <span class="unit">dpi</span>
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.6" id="dpiDetail">
+              加载图片后显示打印尺寸
+            </div>
+          </div>
+
+          <div class="ctrl-label">常用 DPI 预设</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="setDPI(72)">72 屏幕</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDPI(150)">150 普通打印</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDPI(300)">300 标准打印</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDPI(600)">600 高清印刷</button>
+          </div>
+
+          <div class="sep"></div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.7">
+            <b>常见打印用途的 DPI：</b><br>
+            · 72 dpi → 屏幕显示、网页<br>
+            · 150 dpi → 报纸、书籍内页<br>
+            · 300 dpi → 照片打印、杂志（标准）<br>
+            · 600 dpi → 画册、艺术品印刷<br>
+            · 1200+ dpi → 专业印刷机
+          </div>
+        </div>
+
+        <!-- ===== TAB 5: 格式 & 导出 ===== -->
+        <div class="tab-content" id="tab-format">
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              输出格式
+              <span class="info-dot">?<span class="tooltip">
+                <b>JPEG</b>：有损压缩，文件小，兼容性最好<br>
+                <b>PNG</b>：无损+透明通道，文件大<br>
+                <b>WebP</b>：比JPEG小30%，部分老软件不支持<br>
+                <b>BMP</b>：完全不压缩，别用除非你要RAW
+              </span></span>
+            </div>
+            <div class="format-grid" id="formatGrid">
+              <div class="fmt-btn active" data-fmt="image/jpeg" onclick="setFormat('image/jpeg')">JPEG</div>
+              <div class="fmt-btn" data-fmt="image/png" onclick="setFormat('image/png')">PNG</div>
+              <div class="fmt-btn" data-fmt="image/webp" onclick="setFormat('image/webp')">WebP</div>
+              <div class="fmt-btn" data-fmt="image/bmp" onclick="setFormat('image/bmp')">BMP</div>
+            </div>
+          </div>
+
+          <div class="ctrl-group" id="qualityGroup">
+            <div class="ctrl-label">压缩质量（JPEG / WebP）</div>
+            <div class="range-row">
+              <label>小</label>
+              <input type="range" id="qualitySlider" min="1" max="100" value="90" oninput="updateQuality()">
+              <label>大</label>
+              <span class="rval" id="qualityLabel">90%</span>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="output-card" id="outputStats">
+            <div class="stat">
+              <div class="stat-label">输出尺寸</div>
+              <div class="stat-val" id="statSize">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">文件大小</div>
+              <div class="stat-val" id="statFileSize">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">打印(300dpi)</div>
+              <div class="stat-val" id="statPrint">—</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">像素总数</div>
+              <div class="stat-val" id="statMP">—</div>
+            </div>
+          </div>
+
+          <button class="btn btn-success" style="width:100%;margin-top:10px;padding:10px" onclick="exportImage()">
+            💾 导出图片
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer style="text-align:center;padding:14px 0 6px;font-size:11px;color:var(--text2);opacity:0.5">
+    PhotoForge v1.0 手机版
+  </footer>
+</div>
+
+<script>
+// ===== State =====
+let originalImage = null;
+let processedCanvas = null;
+let previewCanvas, previewCtx;
+let aspectLocked = true;
+let viewScale = 1;
+let currentFormat = 'image/jpeg';
+let compressRatio = 'free'; // 压缩 Tab 里的比例选择
+let originalFileSize = 0; // bytes
+
+const canvasWrap = document.getElementById('canvasWrap');
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  previewCanvas = document.getElementById('mainCanvas');
+  previewCtx = previewCanvas.getContext('2d');
+
+  canvasWrap.addEventListener('dragover', e => { e.preventDefault(); canvasWrap.style.outline = '2px solid var(--accent)'; });
+  canvasWrap.addEventListener('dragleave', () => { canvasWrap.style.outline = 'none'; });
+  canvasWrap.addEventListener('drop', e => {
+    e.preventDefault(); canvasWrap.style.outline = 'none';
+    if (e.dataTransfer.files[0]) {
+      const r = new FileReader();
+      r.onload = ev => loadFromURL(ev.target.result);
+      r.readAsDataURL(e.dataTransfer.files[0]);
+    }
+  });
+
+  canvasWrap.addEventListener('wheel', e => {
+    if (!originalImage) return;
+    e.preventDefault();
+    viewScale = Math.max(0.1, Math.min(5, viewScale + (e.deltaY > 0 ? -0.1 : 0.1)));
+    renderView();
+  }, { passive: false });
+});
+
+// ===== Image Load =====
+function loadImage(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  originalFileSize = f.size;
+  const r = new FileReader();
+  r.onload = ev => loadFromURL(ev.target.result);
+  r.readAsDataURL(f);
+}
+
+function loadFromURL(url) {
+  const img = new Image();
+  img.onload = () => {
+    originalImage = img;
+    previewCanvas.classList.remove('hidden');
+    document.getElementById('placeholder').classList.add('hidden');
+    viewScale = 1;
+    processedCanvas = null;
+
+    document.getElementById('outWidth').value = img.width;
+    document.getElementById('outWidth2').value = img.width;
+    document.getElementById('outHeight').value = img.height;
+    document.getElementById('outHeight2').value = img.height;
+    aspectLocked = true;
+    updateLockBtn();
+
+    // 重置压缩Tab的比例
+    compressRatio = 'free';
+    document.querySelectorAll('#compressRatioGrid .ratio-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('#compressRatioGrid .ratio-btn[data-cr="free"]')?.classList.add('active');
+    document.getElementById('compressResult').classList.add('hidden');
+
+    renderView();
+    updateTags();
+    updateStats();
+    document.getElementById('dpiDetail').textContent = `等待计算...`;
+    updateDpiInfo();
+  };
+  img.src = url;
+}
+
+// ===== View Render =====
+function renderView() {
+  if (!originalImage) return;
+  const w = originalImage.width * viewScale;
+  const h = originalImage.height * viewScale;
+  previewCanvas.width = Math.round(w);
+  previewCanvas.height = Math.round(h);
+  previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+  const src = processedCanvas || originalImage;
+  previewCtx.drawImage(src, 0, 0, previewCanvas.width, previewCanvas.height);
+  document.getElementById('viewZoom').textContent = Math.round(viewScale * 100) + '%';
+}
+
+// ===== Tags =====
+function updateTags() {
+  const el = document.getElementById('imgTags');
+  if (!originalImage) { el.innerHTML = ''; return; }
+  const ow = originalImage.width, oh = originalImage.height;
+  const dw = parseInt(document.getElementById('outWidth').value) || ow;
+  const dh = parseInt(document.getElementById('outHeight').value) || oh;
+  const totalMP = (dw*dh/1e6).toFixed(2);
+  el.innerHTML = `
+    <span class="img-tag">原件 <strong>${ow}×${oh}</strong> ${originalFileSize ? '· '+fmtSize(originalFileSize) : ''}</span>
+    <span class="img-tag">输出 <strong>${dw}×${dh}</strong> · ${totalMP}MP</span>
+  `;
+}
+
+// ===== Size (Compress Tab) =====
+function onSizeInput(which) {
+  const w = parseInt(document.getElementById('outWidth').value) || 0;
+  const h = parseInt(document.getElementById('outHeight').value) || 0;
+  if (!originalImage || w <= 0 || h <= 0) return;
+  if (aspectLocked) {
+    const r = originalImage.width / originalImage.height;
+    if (which === 'w') document.getElementById('outHeight').value = Math.round(w / r);
+    else document.getElementById('outWidth').value = Math.round(h * r);
+  }
+  document.getElementById('outWidth2').value = document.getElementById('outWidth').value;
+  document.getElementById('outHeight2').value = document.getElementById('outHeight').value;
+  processImage();
+}
+
+function toggleLock() {
+  aspectLocked = !aspectLocked; updateLockBtn();
+}
+
+function updateLockBtn() {
+  const b = document.getElementById('lockBtn');
+  b.classList.toggle('active', aspectLocked);
+  b.textContent = aspectLocked ? '🔗' : '🔓';
+}
+
+function setSize(w, h) {
+  document.getElementById('outWidth').value = w;
+  document.getElementById('outHeight').value = h;
+  document.getElementById('outWidth2').value = w;
+  document.getElementById('outHeight2').value = h;
+  document.getElementById('scaleMode').value = 'auto';
+  document.getElementById('scaleMode2').value = 'auto';
+  aspectLocked = false;
+  onSizeInput('w');
+  aspectLocked = true; updateLockBtn();
+}
+
+function setPct(pct) {
+  if (!originalImage) return;
+  setSize(Math.round(originalImage.width * pct / 100), Math.round(originalImage.height * pct / 100));
+}
+
+// ===== Size Tab sync =====
+function onSizeSync(which) {
+  const w = parseInt(document.getElementById('outWidth2').value) || 0;
+  const h = parseInt(document.getElementById('outHeight2').value) || 0;
+  if (!originalImage || w <= 0 || h <= 0) return;
+  document.getElementById('outWidth').value = w;
+  document.getElementById('outHeight').value = h;
+  aspectLocked = false;
+  onSizeInput('w');
+  aspectLocked = true; updateLockBtn();
+}
+
+function syncScaleMode() {
+  document.getElementById('scaleMode').value = document.getElementById('scaleMode2').value;
+  processImage();
+}
+
+function setSize2(w, h) { setSize(w, h); }
+function setPct2(pct) { setPct(pct); }
+
+// ===== Process =====
+function processImage() {
+  if (!originalImage) return;
+  const ow = originalImage.width, oh = originalImage.height;
+  let dw = parseInt(document.getElementById('outWidth').value) || ow;
+  let dh = parseInt(document.getElementById('outHeight').value) || oh;
+  if (dw <= 0 || dh <= 0) return;
+
+  const mode = document.getElementById('scaleMode').value;
+  const interp = document.getElementById('interpolation')?.value || 'high';
+  const sr = ow / oh, dr = dw / dh;
+  let sx=0, sy=0, sw=ow, sh=oh, dx=0, dy=0, dtw=dw, dth=dh;
+
+  if (mode === 'fit') {
+    if (sr > dr) { dth = Math.round(dw / sr); dy = Math.round((dh - dth) / 2); }
+    else { dtw = Math.round(dh * sr); dx = Math.round((dw - dtw) / 2); }
+  } else if (mode === 'fill') {
+    if (sr > dr) { sw = Math.round(oh * dr); sx = Math.round((ow - sw) / 2); }
+    else { sh = Math.round(ow / dr); sy = Math.round((oh - sh) / 2); }
+  }
+
+  const off = document.createElement('canvas');
+  off.width = dw; off.height = dh;
+  const oc = off.getContext('2d');
+  if (interp === 'nearest') oc.imageSmoothingEnabled = false;
+  else { oc.imageSmoothingEnabled = true; oc.imageSmoothingQuality = interp === 'high' ? 'high' : 'low'; }
+
+  if (mode === 'fit') { oc.fillStyle = '#0f0f13'; oc.fillRect(0, 0, dw, dh); }
+  oc.drawImage(originalImage, sx, sy, sw, sh, dx, dy, dtw, dth);
+  processedCanvas = off;
+  applySharpness();
+  renderView();
+  updateTags();
+  updateStats();
+  updateDpiInfo();
+}
+
+// ===== Compress to Target =====
+function compressToTarget() {
+  if (!originalImage) return;
+  const targetKB = parseInt(document.getElementById('compressTarget').value);
+  if (!targetKB || targetKB <= 0) return;
+  const targetBytes = targetKB * 1024;
+  let ow = originalImage.width, oh = originalImage.height;
+
+  // 第一步：如果选了比例，先裁到目标比例
+  let detailRatio = '';
+  if (compressRatio !== 'free') {
+    const result = calcCropSize(ow, oh, compressRatio);
+    ow = result.w; oh = result.h;
+    const names = { '1:1':'1:1', '4:3':'4:3', '3:2':'3:2', '16:9':'16:9', '9:16':'9:16', '2.35:1':'2.35:1', 'idcard':'证件照' };
+    detailRatio = `裁成${names[compressRatio]||compressRatio}（${ow}×${oh}） → `;
+  }
+
+  const origRaw = ow * oh * 4;
+  let bestW = ow, bestH = oh, bestQ = 90, bestEst = Infinity;
+
+  // 尝试各种尺寸缩放 + 质量组合
+  const scales = [1, 0.85, 0.7, 0.55, 0.4, 0.3, 0.2, 0.12, 0.08];
+  const qualities = [90, 80, 70, 60, 50, 40, 30, 20, 10];
+
+  for (const scale of scales) {
+    const tw = Math.round(ow * scale);
+    const th = Math.round(oh * scale);
+    if (tw < 1 || th < 1) continue;
+    const raw = tw * th * 4;
+
+    for (const q of qualities) {
+      const est = raw * (0.05 + 0.25 * (1 - q/100));
+      const diff = Math.abs(est - targetBytes);
+      if (diff < Math.abs(bestEst - targetBytes) && est <= targetBytes * 1.15) {
+        bestEst = est;
+        bestW = tw; bestH = th; bestQ = q;
+      }
+      if (est <= targetBytes && est >= targetBytes * 0.65 && q > bestQ && tw >= bestW) {
+        bestW = tw; bestH = th; bestQ = q; bestEst = est;
+      }
+    }
+  }
+
+  // 应用结果
+  document.getElementById('outWidth').value = bestW;
+  document.getElementById('outHeight').value = bestH;
+  document.getElementById('outWidth2').value = bestW;
+  document.getElementById('outHeight2').value = bestH;
+  document.getElementById('qualitySlider').value = bestQ;
+  document.getElementById('qualityLabel').textContent = bestQ + '%';
+  document.getElementById('scaleMode').value = compressRatio !== 'free' ? 'fill' : 'auto';
+  document.getElementById('scaleMode2').value = compressRatio !== 'free' ? 'fill' : 'auto';
+  setFormat('image/jpeg');
+
+  processImage();
+
+  // 显示结果
+  document.getElementById('compressResult').classList.remove('hidden');
+  document.getElementById('crOrig').textContent = originalFileSize ? fmtSize(originalFileSize) : fmtSize(origRaw);
+  document.getElementById('crNew').textContent = fmtSize(Math.max(bestEst, 100));
+  const pct = originalFileSize ? ((1 - bestEst / originalFileSize) * 100).toFixed(0) : '—';
+  document.getElementById('crRatio').textContent = pct !== '—' ? `-${pct}%` : '—';
+  document.getElementById('crDetail').textContent =
+    `${detailRatio}尺寸 ${ow}×${oh} → ${bestW}×${bestH}，质量 ${bestQ}%，预估 ${fmtSize(Math.max(bestEst,100))}`;
+}
+
+// 计算从中心裁剪到目标比例的尺寸
+function calcCropSize(w, h, ratioName) {
+  const sr = w / h;
+  let rw, rh;
+  switch (ratioName) {
+    case '1:1': rw = rh = Math.min(w, h); break;
+    case '4:3': if (sr > 4/3) { rh = h; rw = h * 4/3; } else { rw = w; rh = w * 3/4; } break;
+    case '3:2': if (sr > 3/2) { rh = h; rw = h * 3/2; } else { rw = w; rh = w * 2/3; } break;
+    case '16:9': if (sr > 16/9) { rh = h; rw = h * 16/9; } else { rw = w; rh = w * 9/16; } break;
+    case '9:16': if (sr > 9/16) { rh = h; rw = h * 9/16; } else { rw = w; rh = w * 16/9; } break;
+    case '2.35:1': if (sr > 2.35) { rh = h; rw = h * 2.35; } else { rw = w; rh = w / 2.35; } break;
+    case 'idcard': rw = 295; rh = 413; break;
+    default: return { w, h };
+  }
+  return { w: Math.round(rw), h: Math.round(rh) };
+}
+
+// ===== Sharpness =====
+function onSharpen() {
+  const v = parseInt(document.getElementById('sharpenAmount').value);
+  const d = parseInt(document.getElementById('denoiseAmount').value);
+  document.getElementById('sharpenVal').textContent = v;
+  document.getElementById('denoiseVal').textContent = d;
+  applySharpness();
+}
+
+function setSharpen(s, d) {
+  document.getElementById('sharpenAmount').value = s;
+  document.getElementById('denoiseAmount').value = d;
+  document.getElementById('sharpenVal').textContent = s;
+  document.getElementById('denoiseVal').textContent = d;
+  applySharpness();
+}
+
+function applySharpness() {
+  if (!processedCanvas) { renderView(); return; }
+  const amount = parseInt(document.getElementById('sharpenAmount').value);
+  const denoise = parseInt(document.getElementById('denoiseAmount').value);
+  if (amount === 0 && denoise === 0) { renderView(); return; }
+
+  const w = processedCanvas.width, h = processedCanvas.height;
+  const oc = processedCanvas.getContext('2d');
+  const imgData = oc.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  const copy = new Uint8ClampedArray(d);
+
+  if (amount > 0) {
+    const s = amount / 100;
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = (y * w + x) * 4;
+        const lR = -d[((y-1)*w+x)*4] - d[((y+1)*w+x)*4] - d[(y*w+x-1)*4] - d[(y*w+x+1)*4] + 4*d[i];
+        const lG = -d[((y-1)*w+x)*4+1] - d[((y+1)*w+x)*4+1] - d[(y*w+x-1)*4+1] - d[(y*w+x+1)*4+1] + 4*d[i+1];
+        const lB = -d[((y-1)*w+x)*4+2] - d[((y+1)*w+x)*4+2] - d[(y*w+x-1)*4+2] - d[(y*w+x+1)*4+2] + 4*d[i+2];
+        copy[i]   = Math.min(255, Math.max(0, d[i]   + lR * s));
+        copy[i+1] = Math.min(255, Math.max(0, d[i+1] + lG * s));
+        copy[i+2] = Math.min(255, Math.max(0, d[i+2] + lB * s));
+      }
+    }
+  }
+
+  if (denoise > 0) {
+    const ns = denoise / 100;
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = (y * w + x) * 4;
+        let sr=0, sg=0, sb=0;
+        for (let ky=-1; ky<=1; ky++)
+          for (let kx=-1; kx<=1; kx++) {
+            const idx = ((y+ky)*w + (x+kx)) * 4;
+            sr += copy[idx]; sg += copy[idx+1]; sb += copy[idx+2];
+          }
+        copy[i]   = Math.round(copy[i]   * (1-ns) + sr/9 * ns);
+        copy[i+1] = Math.round(copy[i+1] * (1-ns) + sg/9 * ns);
+        copy[i+2] = Math.round(copy[i+2] * (1-ns) + sb/9 * ns);
+      }
+    }
+  }
+
+  oc.putImageData(new ImageData(copy, w, h), 0, 0);
+  renderView();
+}
+
+// ===== Format =====
+function setFormat(fmt) {
+  currentFormat = fmt;
+  document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.fmt-btn[data-fmt="${fmt}"]`)?.classList.add('active');
+  document.getElementById('qualityGroup').style.display =
+    (fmt === 'image/png' || fmt === 'image/bmp') ? 'none' : 'block';
+  updateStats();
+}
+
+function updateQuality() {
+  const q = parseInt(document.getElementById('qualitySlider').value);
+  document.getElementById('qualityLabel').textContent = q + '%';
+  updateStats();
+}
+
+// ===== DPI =====
+function setDPI(dpi) {
+  document.getElementById('dpiInput').value = dpi;
+  updateStats(); updateDpiInfo();
+}
+
+function updateDpiInfo() {
+  if (!originalImage) return;
+  const dpi = parseInt(document.getElementById('dpiInput').value) || 300;
+  const w = parseInt(document.getElementById('outWidth').value) || originalImage.width;
+  const h = parseInt(document.getElementById('outHeight').value) || originalImage.height;
+  const ci = (w / dpi * 2.54).toFixed(1);
+  const cm = (h / dpi * 2.54).toFixed(1);
+  const ini = (w / dpi).toFixed(2);
+  const inm = (h / dpi).toFixed(2);
+  document.getElementById('dpiDetail').innerHTML =
+    `📐 <b>${w}×${h}px</b>  @  <b>${dpi} dpi</b><br>` +
+    `🖨️ 打印尺寸: ${ini}×${inm} 英寸 (${ci}×${cm} 厘米)`;
+}
+
+// ===== Stats =====
+function updateStats() {
+  if (!originalImage) {
+    ['statSize','statFileSize','statPrint','statMP'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+  const w = parseInt(document.getElementById('outWidth').value) || originalImage.width;
+  const h = parseInt(document.getElementById('outHeight').value) || originalImage.height;
+  const dpi = parseInt(document.getElementById('dpiInput').value) || 300;
+  const q = parseInt(document.getElementById('qualitySlider').value) / 100;
+
+  document.getElementById('statSize').textContent = `${w}×${h}px`;
+  document.getElementById('statMP').textContent = (w*h/1e6).toFixed(2) + ' MP';
+
+  const raw = w * h * 4;
+  let est;
+  switch (currentFormat) {
+    case 'image/jpeg': est = raw * (0.05 + 0.25 * (1 - q)); break;
+    case 'image/png': est = raw * 0.4; break;
+    case 'image/webp': est = raw * (0.03 + 0.2 * (1 - q)); break;
+    case 'image/bmp': est = raw; break;
+    default: est = raw;
+  }
+  document.getElementById('statFileSize').textContent = fmtSize(Math.max(est, 100));
+
+  const ci = (w / dpi * 2.54).toFixed(1);
+  const cm = (h / dpi * 2.54).toFixed(1);
+  document.getElementById('statPrint').textContent = `${ci}×${cm} cm`;
+}
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1024/1024).toFixed(2) + ' MB';
+}
+
+// ===== Tab Switch =====
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'format') updateStats();
+  if (name === 'dpi') updateDpiInfo();
+}
+
+// ===== Export =====
+function exportImage() {
+  if (!originalImage && !processedCanvas) return;
+  processImage();
+  if (!processedCanvas) return;
+
+  const q = parseInt(document.getElementById('qualitySlider').value) / 100;
+  const dpi = parseInt(document.getElementById('dpiInput').value) || 300;
+  const extMap = { 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/bmp':'bmp' };
+  const ext = extMap[currentFormat] || 'jpg';
+
+  let dataURL;
+  if (currentFormat === 'image/png' || currentFormat === 'image/bmp') {
+    dataURL = processedCanvas.toDataURL(currentFormat);
+  } else {
+    dataURL = processedCanvas.toDataURL(currentFormat, q);
+  }
+
+  const a = document.createElement('a');
+  a.download = `PhotoForge_${processedCanvas.width}x${processedCanvas.height}_${dpi}dpi.${ext}`;
+  a.href = dataURL;
+  a.click();
+
+  const bl = dataURL.length - dataURL.indexOf(',') - 1;
+  document.getElementById('statFileSize').textContent = fmtSize(Math.round(bl * 0.75));
+}
+
+// ===== Reset =====
+function resetAll() {
+  if (!originalImage) return;
+  viewScale = 1; processedCanvas = null;
+  const ow = originalImage.width, oh = originalImage.height;
+  ['outWidth','outWidth2'].forEach(id => document.getElementById(id).value = ow);
+  ['outHeight','outHeight2'].forEach(id => document.getElementById(id).value = oh);
+  document.getElementById('scaleMode').value = 'auto';
+  document.getElementById('scaleMode2').value = 'auto';
+  document.getElementById('qualitySlider').value = 90;
+  document.getElementById('qualityLabel').textContent = '90%';
+  document.getElementById('dpiInput').value = 300;
+  document.getElementById('sharpenAmount').value = 0;
+  document.getElementById('sharpenVal').textContent = '0';
+  document.getElementById('denoiseAmount').value = 0;
+  document.getElementById('denoiseVal').textContent = '0';
+  aspectLocked = true; updateLockBtn();
+  setFormat('image/jpeg');
+  compressRatio = 'free';
+  document.querySelectorAll('#compressRatioGrid .ratio-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#compressRatioGrid .ratio-btn[data-cr="free"]')?.classList.add('active');
+  document.getElementById('compressResult').classList.add('hidden');
+  renderView(); updateTags(); updateStats(); updateDpiInfo();
+}
+
+// ===== Compress Tab: 先选比例 =====
+function setCompressRatio(name) {
+  compressRatio = name;
+  document.querySelectorAll('#compressRatioGrid .ratio-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`#compressRatioGrid .ratio-btn[data-cr="${name}"]`)?.classList.add('active');
+}
+
+// ===== 背景换色 =====
+var bgTargetColor = [255, 255, 255];
+var bgReplacementColor = [0, 125, 255];
+
+function setBgTarget(r, g, b) {
+  bgTargetColor = [r, g, b];
+  document.getElementById('targetColorPreview').style.background = 'rgb('+r+','+g+','+b+')';
+  document.getElementById('targetColorLabel').textContent = 'RGB('+r+','+g+','+b+')';
+}
+function setBgReplacement(r, g, b) { bgReplacementColor = [r, g, b]; }
+function updateBgTolerance() {
+  var v = parseInt(document.getElementById('bgTolerance').value);
+  document.getElementById('bgToleranceVal').textContent = v;
+}
+function pickColorFromImage() {
+  if (!originalImage) return;
+  var c = document.createElement('canvas'); c.width = 1; c.height = 1;
+  var cx = c.getContext('2d');
+  var sw = Math.min(50, originalImage.width);
+  var sh = Math.min(50, originalImage.height);
+  var sx = Math.round((originalImage.width - sw) / 2);
+  var sy = Math.round((originalImage.height - sh) / 2);
+  cx.drawImage(originalImage, sx, sy, sw, sh, 0, 0, 1, 1);
+  var pd = cx.getImageData(0, 0, 1, 1).data;
+  setBgTarget(pd[0], pd[1], pd[2]);
+}
+function applyBgSwap() {
+  if (!originalImage) return;
+  var tol = parseInt(document.getElementById('bgTolerance').value);
+  var tr = bgTargetColor[0], tg = bgTargetColor[1], tb = bgTargetColor[2];
+  var rr = bgReplacementColor[0], rg = bgReplacementColor[1], rb = bgReplacementColor[2];
+  var src = processedCanvas || originalImage;
+  var w = src.width, h = src.height;
+  var off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  var oc = off.getContext('2d');
+  oc.drawImage(src, 0, 0);
+  var imgData = oc.getImageData(0, 0, w, h);
+  var d = imgData.data;
+  var orig = new Uint8ClampedArray(d);
+  for (var i = 0; i < d.length; i += 4) {
+    var dist = Math.sqrt((d[i]-tr)*(d[i]-tr) + (d[i+1]-tg)*(d[i+1]-tg) + (d[i+2]-tb)*(d[i+2]-tb));
+    if (dist <= tol) {
+      var blend = dist / tol;
+      d[i]   = Math.round(rr * (1-blend) + orig[i]   * blend);
+      d[i+1] = Math.round(rg * (1-blend) + orig[i+1] * blend);
+      d[i+2] = Math.round(rb * (1-blend) + orig[i+2] * blend);
+    }
+  }
+  oc.putImageData(imgData, 0, 0);
+  processedCanvas = off;
+  ['outWidth','outWidth2'].forEach(function(id) { document.getElementById(id).value = w; });
+  ['outHeight','outHeight2'].forEach(function(id) { document.getElementById(id).value = h; });
+  renderView(); updateTags(); updateStats();
+}
+</script>
+
+<!-- 微信小程序 WebView 通信桥 -->
+<script>
+(function() {
+  // 检测是否在微信小程序 WebView 中
+  var isWeApp = typeof window.__wxjs_environment !== 'undefined' ||
+                navigator.userAgent.indexOf('miniProgram') > -1 ||
+                navigator.userAgent.indexOf('MicroMessenger') > -1;
+
+  if (isWeApp) {
+    // 监听小程序传入的图片
+    var params = new URLSearchParams(window.location.search);
+    var imgData = params.get('img');
+    if (imgData) {
+      // 小程序传图进来了
+      setTimeout(function() {
+        loadFromURL(decodeURIComponent(imgData));
+      }, 500);
+    }
+
+    // 劫持导出函数，通知小程序
+    var origExport = window.exportImage;
+    if (origExport) {
+      window.exportImage = function() {
+        origExport();
+        // 给小程序发消息
+        setTimeout(function() {
+          try {
+            var dataURL = document.querySelector('canvas').toDataURL('image/jpeg', 0.9);
+            wx.miniProgram.postMessage({
+              data: { type: 'image_ready', dataUrl: dataURL }
+            });
+          } catch(e) { console.error(e); }
+        }, 300);
+      };
+    }
+  }
+})();
+</script>
+</body>
+</html>
