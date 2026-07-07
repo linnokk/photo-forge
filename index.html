@@ -68,36 +68,36 @@
   .btn-icon.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
   /* ---- Layout ---- */
-  .workspace { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+  .workspace { display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
   @media (max-width: 1000px) { .workspace { grid-template-columns: 1fr; } }
 
   /* ---- Card ---- */
   .card {
     background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);
-    padding: 20px; box-shadow: var(--shadow);
+    padding: 16px; box-shadow: var(--shadow);
   }
   .card-title {
     font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--text2); margin-bottom: 14px;
+    color: var(--text2); margin-bottom: 10px;
   }
   .card-title i { margin-right: 6px; font-style: normal; }
 
   /* ---- Preview ---- */
   .preview-area .canvas-wrap {
-    width: 100%; min-height: 180px; border-radius: 10px; overflow: hidden;
+    width: 100%; min-height: 0; border-radius: 8px; overflow: hidden;
     background: repeating-conic-gradient(#1a1a24 0% 25%, transparent 0% 50%) 0 0 / 24px 24px;
     display: flex; align-items: center; justify-content: center; position: relative;
   }
-  .preview-area .canvas-wrap canvas { max-width:100%; max-height:400px; display:block; }
+  .preview-area .canvas-wrap canvas { max-width:100%; max-height:260px; display:block; }
   .placeholder {
-    color: var(--text2); text-align:center; padding: 24px 20px;
+    color: var(--text2); text-align:center; padding: 10px 12px;
   }
-  .placeholder .big-icon { font-size: 36px; margin-bottom: 8px; }
-  .placeholder p { font-size: 12px; }
-  .placeholder .sub { font-size: 11px; margin-top: 4px; opacity: 0.6; }
+  .placeholder .big-icon { font-size: 22px; margin-bottom: 2px; }
+  .placeholder p { font-size: 11px; }
+  .placeholder .sub { font-size: 10px; margin-top: 2px; opacity: 0.6; }
 
   .preview-bar {
-    display: flex; align-items: center; justify-content: space-between; margin-top: 10px;
+    display: flex; align-items: center; justify-content: space-between; margin-top: 4px;
   }
   .img-tags { display: flex; gap: 6px; flex-wrap: wrap; }
   .img-tag {
@@ -309,6 +309,7 @@
           <button class="tab active" data-tab="compress" onclick="switchTab('compress')">📦 压缩</button>
           <button class="tab" data-tab="size" onclick="switchTab('size')">📐 尺寸</button>
           <button class="tab" data-tab="sharpen" onclick="switchTab('sharpen')">✨ 清晰度</button>
+          <button class="tab" data-tab="bgswap" onclick="switchTab('bgswap')">🎨 换底</button>
           <button class="tab" data-tab="dpi" onclick="switchTab('dpi')">🖨️ DPI</button>
           <button class="tab" data-tab="format" onclick="switchTab('format')">💾 格式</button>
         </div>
@@ -525,6 +526,63 @@
             📐 <b>像素</b> = 图片由多少个点组成（决定了多大多清晰的基础）<br>
             ✨ <b>清晰度(锐化)</b> = 让每个点之间的边缘更锋利（不增加点）<br>
             🖨️ <b>DPI</b> = 这些点打印时每英寸放多少个（决定打印大小）
+          </div>
+        </div>
+
+        <!-- ===== TAB: 换底 ===== -->
+        <div class="tab-content" id="tab-bgswap">
+          <div class="ctrl-group">
+            <div class="ctrl-label">
+              ① 选要替换的颜色
+              <span class="info-dot">?<span class="tooltip">
+                点击图片上的颜色采样，或直接选常见底色<br>
+                适合：证件照换底（白→蓝、白→红等）
+              </span></span>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="pickColorFromImage()">🎯 从图片取色</button>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(255,255,255)" style="background:#fff;color:#333">⬜ 白色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(0,125,255)" style="background:#007dff;color:#fff">🔵 蓝色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(255,50,50)" style="background:#ff3232;color:#fff">🔴 红色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgTarget(0,180,80)" style="background:#00b450;color:#fff">🟢 绿色</button>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+              <span style="font-size:11px;color:var(--text2)">当前:</span>
+              <span id="targetColorPreview" style="display:inline-block;width:20px;height:20px;border-radius:4px;border:1px solid var(--border);background:#fff"></span>
+              <span id="targetColorLabel" style="font-size:11px;color:var(--text2)">RGB(255,255,255)</span>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <div class="ctrl-label">② 替换成</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(255,255,255)" style="background:#fff;color:#333">⬜ 白色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(0,125,255)" style="background:#007dff;color:#fff">🔵 蓝色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(255,50,50)" style="background:#ff3232;color:#fff">🔴 红色</button>
+              <button class="btn btn-secondary btn-sm" onclick="setBgReplacement(0,180,80)" style="background:#00b450;color:#fff">🟢 绿色</button>
+            </div>
+          </div>
+
+          <div class="ctrl-group">
+            <div class="ctrl-label">③ 容差（颜色敏感度）</div>
+            <div class="range-row">
+              <label>低</label>
+              <input type="range" id="bgTolerance" min="5" max="150" value="40" oninput="updateBgTolerance()">
+              <label>高</label>
+              <span class="rval" id="bgToleranceVal">40</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="applyBgSwap()">⚡ 执行换底</button>
+
+          <div class="sep"></div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6">
+            <b>使用技巧：</b><br>
+            · 容差越小，替换越精确（只替换纯色区域）<br>
+            · 证件照换底建议容差 30-50<br>
+            · 边缘有发丝残留可以先锐化再换底
           </div>
         </div>
 
@@ -1141,6 +1199,83 @@ function setCompressRatio(name) {
   compressRatio = name;
   document.querySelectorAll('#compressRatioGrid .ratio-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`#compressRatioGrid .ratio-btn[data-cr="${name}"]`)?.classList.add('active');
+}
+
+// ===== 背景换色 =====
+var bgTargetColor = [255, 255, 255];
+var bgReplacementColor = [0, 125, 255];
+
+function setBgTarget(r, g, b) {
+  bgTargetColor = [r, g, b];
+  document.getElementById('targetColorPreview').style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
+  document.getElementById('targetColorLabel').textContent = 'RGB(' + r + ',' + g + ',' + b + ')';
+}
+
+function setBgReplacement(r, g, b) {
+  bgReplacementColor = [r, g, b];
+}
+
+function updateBgTolerance() {
+  var v = parseInt(document.getElementById('bgTolerance').value);
+  document.getElementById('bgToleranceVal').textContent = v;
+}
+
+function pickColorFromImage() {
+  if (!originalImage) return;
+  // 从图片中心50×50区域采样平均颜色作为目标色
+  var c = document.createElement('canvas');
+  c.width = 1; c.height = 1;
+  var cx = c.getContext('2d');
+  var sw = Math.min(50, originalImage.width);
+  var sh = Math.min(50, originalImage.height);
+  var sx = Math.round((originalImage.width - sw) / 2);
+  var sy = Math.round((originalImage.height - sh) / 2);
+  cx.drawImage(originalImage, sx, sy, sw, sh, 0, 0, 1, 1);
+  var pd = cx.getImageData(0, 0, 1, 1).data;
+  setBgTarget(pd[0], pd[1], pd[2]);
+}
+
+function applyBgSwap() {
+  if (!originalImage) return;
+  var tol = parseInt(document.getElementById('bgTolerance').value);
+  var tr = bgTargetColor[0], tg = bgTargetColor[1], tb = bgTargetColor[2];
+  var rr = bgReplacementColor[0], rg = bgReplacementColor[1], rb = bgReplacementColor[2];
+
+  var src = processedCanvas || originalImage;
+  var w = src.width, h = src.height;
+
+  var off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  var oc = off.getContext('2d');
+  oc.drawImage(src, 0, 0);
+  var imgData = oc.getImageData(0, 0, w, h);
+  var d = imgData.data;
+  var srcArr = new Uint8ClampedArray(d);
+
+  for (var i = 0; i < d.length; i += 4) {
+    var dr = d[i] - tr;
+    var dg = d[i+1] - tg;
+    var db = d[i+2] - tb;
+    var dist = Math.sqrt(dr*dr + dg*dg + db*db);
+    if (dist <= tol) {
+      var blend = dist / tol; // 0=完全替换, 1=保留原色
+      d[i]   = Math.round(rr * (1-blend) + srcArr[i]   * blend);
+      d[i+1] = Math.round(rg * (1-blend) + srcArr[i+1] * blend);
+      d[i+2] = Math.round(rb * (1-blend) + srcArr[i+2] * blend);
+    }
+  }
+
+  oc.putImageData(imgData, 0, 0);
+  processedCanvas = off;
+
+  document.getElementById('outWidth').value = w;
+  document.getElementById('outHeight').value = h;
+  document.getElementById('outWidth2').value = w;
+  document.getElementById('outHeight2').value = h;
+
+  renderView();
+  updateTags();
+  updateStats();
 }
 </script>
 </body>
